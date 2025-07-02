@@ -1,7 +1,9 @@
+import Game from './components/game/Game';
+
 function App() {
   return (
     <>
-      <h1>Fly The Airbus</h1>
+      <Game />
     </>
   )
 }
