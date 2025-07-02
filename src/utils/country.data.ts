@@ -1,5 +1,14 @@
 import type { Country } from "../types/game.types";
 
+export const continents = [
+  "Africa",
+  "Asia",
+  "Europe",
+  "North America",
+  "South America",
+  "Oceania",
+];
+
 export const countries: Country[] = [
   { id: 1, name: 'Afghanistan', latitude: 33, longitude: 65, flag: '🇦🇫', continent: 'Asia' },
   { id: 2, name: 'Albania', latitude: 41, longitude: 20, flag: '🇦🇱', continent: 'Europe' },
