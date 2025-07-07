@@ -1,6 +1,8 @@
 import React from 'react';
+import Map from "../map/Map";
 import { useGameLogic } from '../../hooks/useGameLogic';
 import { continents } from '../../utils/country.data';
+
 
 const Game: React.FC = () => {
   const {
@@ -9,56 +11,61 @@ const Game: React.FC = () => {
     currentQuestion,
     message,
     gameOver,
-    handleAnswer,
     initializeGame,
+    handleMapClick,
+    clickedCountry,
+    handleAnswer
   } = useGameLogic();
-
 
   const renderButtons = () => {
     if (gameOver) {
       return <button onClick={() => initializeGame()}>Play Again</button>;
     }
 
-    switch (stage) {
-      case 0:
-        return (
-          <div>
-            <button onClick={() => initializeGame()}>Start</button>
-          </div>
-        );
-      case 1:
-        return (
-          <div>
-            <button onClick={() => handleAnswer('North')}>North</button>
-            <button onClick={() => handleAnswer('South')}>South</button>
-          </div>
-        );
-      case 2:
-        return (
-          <div>
-            <button onClick={() => handleAnswer('East')}>East</button>
-            <button onClick={() => handleAnswer('West')}>West</button>
-          </div>
-        );
-      case 3:
-        return (
-          <div>
-            <button onClick={() => handleAnswer('Inside')}>Inside</button>
-            <button onClick={() => handleAnswer('Outside')}>Outside</button>
-          </div>
-        );
-      case 4:
-        return (
-          <div>
-            {continents.map(continent => (
-              <button key={continent} onClick={() => handleAnswer(continent)}>{continent}</button>
-            ))}
-          </div>
-        );
-      default:
-        return null;
+    if (stage === 0) {
+      return (
+        <div>
+          <button onClick={() => initializeGame()}>Start</button>
+        </div>
+      );
     }
+
+    return null;
   };
+
+  const renderChoiceButtons = () => {
+    if (gameOver || stage === 0) {
+      return null;
+    }
+
+    let choices: string[] = [];
+    switch (stage) {
+      case 1:
+        choices = ['North', 'South'];
+        break;
+      case 2:
+        choices = ['East', 'West'];
+        break;
+      case 3:
+        choices = ['Inside', 'Outside'];
+        break;
+      case 4:
+        choices = continents;
+        break;
+      default:
+        break;
+    }
+
+    return (
+      <div style={{ marginTop: '10px' }}>
+        {choices.map(choice => (
+          <button key={choice} onClick={() => handleAnswer(choice)} style={{ margin: '5px', padding: '10px 20px', fontSize: '1em' }}>
+            {choice}
+          </button>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div style={{ fontFamily: 'Arial, sans-serif', textAlign: 'center', padding: '20px', backgroundColor: '#f0f0f0' }}>
@@ -66,8 +73,11 @@ const Game: React.FC = () => {
       <div style={{ minHeight: '50px' }}>
         <h2 style={{ color: '#555' }}>{currentQuestion}</h2>
         <p style={{ fontSize: '1.2em', color: '#666' }}>{message}</p>
+        {clickedCountry && <p>You clicked on {clickedCountry}</p>}
       </div>
       {renderButtons()}
+      {stage > 0 && <Map onMapClick={gameOver ? () => {} : handleMapClick} />}
+      {renderChoiceButtons()}
       <div>
         <h3>Your Hand</h3>
         <div style={{ display: 'flex', justifyContent: 'center', minHeight: '100px' }}>

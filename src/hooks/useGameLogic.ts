@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { countries } from '../utils/country.data';
 import type { Country } from '../types/game.types';
+import { LatLng } from 'leaflet';
+import { getCountryFromLatLng } from '../utils/reverseGeocode';
 
 function shuffleCountries() {
   const shuffled = [...countries];
@@ -18,6 +20,7 @@ export const useGameLogic = () => {
   const [currentQuestion, setCurrentQuestion] = useState<string>('');
   const [message, setMessage] = useState<string>('');
   const [gameOver, setGameOver] = useState<boolean>(false);
+  const [clickedCountry, setClickedCountry] = useState<string | null>(null);
 
   const initializeGame = () => {
     setDeck(shuffleCountries());
@@ -26,6 +29,7 @@ export const useGameLogic = () => {
     setCurrentQuestion('Round 1: North or South Hemisphere?');
     setMessage('Guess the hemisphere of the next country.');
     setGameOver(false);
+    setClickedCountry(null);
   };
 
   const handleAnswer = (answer: string) => {
@@ -79,6 +83,46 @@ export const useGameLogic = () => {
     }
   };
 
+  const handleMapClick = (latlng: LatLng) => {
+    const countryName = getCountryFromLatLng(latlng);
+    setClickedCountry(countryName);
+
+    if (stage === 1) {
+      if (latlng.lat > 0) {
+        handleAnswer('North');
+      } else {
+        handleAnswer('South');
+      }
+    } else if (stage === 2) {
+      if (!hand[0]) return;
+      if (latlng.lng > hand[0].longitude) {
+        handleAnswer('East');
+      } else {
+        handleAnswer('West');
+      }
+    } else if (stage === 3) {
+      if (!hand[0] || !hand[1]) return;
+      const minLong = Math.min(hand[0].longitude, hand[1].longitude);
+      const maxLong = Math.max(hand[0].longitude, hand[1].longitude);
+      if (latlng.lng > minLong && latlng.lng < maxLong) {
+        handleAnswer('Inside');
+      } else {
+        handleAnswer('Outside');
+      }
+    } else if (stage === 4) {
+      if (countryName) {
+        const clickedCountryData = countries.find(c => c.name === countryName);
+        if (clickedCountryData) {
+          handleAnswer(clickedCountryData.continent);
+        } else {
+          handleAnswer('Unknown');
+        }
+      } else {
+        handleAnswer('Unknown');
+      }
+    }
+  };
+
   return {
     deck,
     hand,
@@ -88,5 +132,7 @@ export const useGameLogic = () => {
     gameOver,
     handleAnswer,
     initializeGame,
+    handleMapClick,
+    clickedCountry
   };
 };
